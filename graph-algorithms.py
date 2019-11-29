@@ -78,16 +78,42 @@ def approx_path(G,u,v):
 	return sum
 
 
-
-
-
-
 #make and show a complete graph on 10 vertices
 def make_graph():
 	G = nx.complete_graph(GRAPH_SIZE)
 	generate_triangle_inequality_weight(G)
 	#generate_random_weights(G)
 	return G
+def get_negative_weights(G):
+	for e in G.edges():
+		G[e[0]][e[1]]['weight'] = -1 * G[e[0]][e[1]]['weight']
+	return G
+
+
+
+def christo(G):
+	
+	mst = find_mst_with_kruskal(G)
+	show_graph(mst)
+	G_neg = get_negative_weights(G)
+	odd_degree = [v for v in mst.nodes() if mst.degree[v] % 2 == 0]
+	odd_graph = G.copy()
+	odd_graph.remove_nodes_from(odd_degree)
+	show_graph(odd_graph)
+	#show_graph(G_neg)
+	min_weight_matching = nx.algorithms.max_weight_matching(odd_graph,weight='weight', maxcardinality=True)
+	H = mst.copy()
+	for e in min_weight_matching:
+		weight = G_neg[e[0]][e[1]]['weight'] * -1
+		H.add_edge(e[0],e[1])
+		H[e[0]][e[1]]['weight'] = weight
+	show_graph(H)
+	eulerian_circuit = nx.algorithms.eulerian_circuit(H)
+	for c in eulerian_circuit:
+		for e in c:
+			print(e)
+
+
 
 def show_graph(G):
 	pos = nx.spring_layout(G)
@@ -125,19 +151,21 @@ def dijkstra_dist(G,originalVertex):
 	return dist
 
 G = make_graph()
+christo(G)
 #mst = find_mst_with_kruskal(G)
 
 #show_graph(mst)
-u = np.random.randint(GRAPH_SIZE)
-v = np.random.randint(GRAPH_SIZE)
-print("FINDING PATH FROM ",u, " TO ", v)
-approx_path(G,u,v)
+#u = np.random.randint(GRAPH_SIZE)
+#v = np.random.randint(GRAPH_SIZE)
+#print("FINDING PATH FROM ",u, " TO ", v)
+#approx_path(G,u,v)
 #G = make_and_show_graph
-print("DJIKSTRA FOUND ",dijkstra_dist(G,u)[v])
-print("KRUSKAL FOUND ",approx_path(G,u,v))
-show_graph(G)
-show_graph(mst)
+#print("DJIKSTRA FOUND ",dijkstra_dist(G,u)[v])
+#print("KRUSKAL FOUND ",approx_path(G,u,v))
+#show_graph(G)
+#show_graph(mst)
 #plt.show(G)
 #plt.show(mst)
+
 
 exit()
